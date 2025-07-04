@@ -2652,4 +2652,5 @@
   'SMS Module Configuration' => 'SMS Module Configuration',
   '3rd Party APIs<' => '3rd Party APIs ',
   'Admin Panel' => 'Admin Panel',
+  'Offday' => 'Offday',
 );
