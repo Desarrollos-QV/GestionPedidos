@@ -217,7 +217,9 @@ class CustomerAuthController extends Controller
 
             return response()->json([
                 'message' => translate('Email is ready to register'),
-                'token' => 'active'
+                'token' => 'active',
+                'nowTime' => Carbon::parse($OTPVerificationData->created_at)->DiffInSeconds(),
+                'OTPIntervalTime' => $OTPIntervalTime
             ], 200);
 
         } else {

@@ -2653,4 +2653,8 @@
   '3rd Party APIs<' => '3rd Party APIs ',
   'Admin Panel' => 'Admin Panel',
   'Offday' => 'Offday',
+  'Firebase Auth Verification Status' => 'Firebase Auth Verification Status',
+  'For configuring OTP in the Firebase, you must create a Firebase project first.
+                        If you haven’t created any project for your application yet, please create a project first.' => 'For configuring OTP in the Firebase, you must create a Firebase project first.
+                        If you haven’t created any project for your application yet, please create a project first.',
 );

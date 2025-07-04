@@ -91,7 +91,7 @@
                         @if(isset($recaptcha) && $recaptcha['status'] == 1)
                             <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response">
 
-                            <input type="hidden" name="set_default_captcha" id="set_default_captcha_value" value="0" >
+                            <input type="hidden" name="set_default_captcha" id="set_default_captcha_value" value="1" >
 
                             <div class="row p-2 d-none" id="reload-captcha">
                                 <div class="col-5 pr-0">
