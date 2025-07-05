@@ -353,7 +353,7 @@ class CustomerAuthController extends Controller
             $maxOTPHitTime = Helpers::get_business_settings('otp_resend_time') ?? 60;// seconds
             $tempBlockTime = Helpers::get_business_settings('temporary_block_time') ?? 600; // seconds
 
-            $verify = EmailVerifications::where(['email' => $request['email'], 'token' => $request['token']])->first();
+            $verify = EmailVerifications::where(['email' => $request->input('email'), 'token' => $request->input('token')])->first();
 
             if (isset($verify)) {
                 if(isset($verify->temp_block_time ) && Carbon::parse($verify->temp_block_time)->DiffInSeconds() <= $tempBlockTime){
@@ -368,7 +368,7 @@ class CustomerAuthController extends Controller
                     ], 403);
                 }
 
-                $user = $this->user->where(['email' => $request['email']])->first();
+                $user = $this->user->where(['email' => $request->input('email')])->first();
                 $user->email_verified_at = Carbon::now();
                 $user->save();
 
@@ -378,7 +378,7 @@ class CustomerAuthController extends Controller
                 $token = $user->createToken('RestaurantCustomerAuth')->accessToken;
                 return response()->json(['message' => translate('OTP verified!'), 'token' => $token, 'status' => true], 200);
             } else{
-                $verificationdata = DB::table('email_verifications')->where('email', $request['email'])->first();
+                $verificationdata = DB::table('email_verifications')->where('email', $request->input('email'))->first();
 
                 if(isset($verificationdata)){
                     if(isset($verificationdata->temp_block_time ) && Carbon::parse($verificationdata->temp_block_time)->DiffInSeconds() <= $tempBlockTime){
@@ -394,7 +394,7 @@ class CustomerAuthController extends Controller
                     }
 
                     if($verificationdata->is_temp_blocked == 1 && Carbon::parse($verificationdata->updated_at)->DiffInSeconds() >= $tempBlockTime){
-                        DB::table('email_verifications')->updateOrInsert(['email' => $request['email']],
+                        DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
                             [
                                 'otp_hit_count' => 0,
                                 'is_temp_blocked' => 0,
@@ -406,7 +406,7 @@ class CustomerAuthController extends Controller
 
                     if($verificationdata->otp_hit_count >= $maxOTPHit &&  Carbon::parse($verificationdata->updated_at)->DiffInSeconds() < $maxOTPHitTime &&  $verificationdata->is_temp_blocked == 0){
 
-                        DB::table('email_verifications')->updateOrInsert(['email' => $request['email']],
+                        DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
                             [
                                 'is_temp_blocked' => 1,
                                 'temp_block_time' => now(),
@@ -423,9 +423,9 @@ class CustomerAuthController extends Controller
                     }
                 }
 
-                DB::table('email_verifications')->updateOrInsert(['email' => $request['email']],
+                DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
                     [
-                        'token' => $request['token'],
+                        'token' => $request->input('token'),
                         'otp_hit_count' => DB::raw('otp_hit_count + 1'),
                         'updated_at' => now(),
                         'temp_block_time' => null,
@@ -437,7 +437,8 @@ class CustomerAuthController extends Controller
             ]], 403);
         }catch (\Exception $exception) {
             return response()->json([
-                'request' => $request,
+                'email' => $request->input('email'),
+                'token' => $request->input('token'),
                 'errors' => [
                     ['code' => 'otp', 'message' => "Token no generado.... ". $exception->getMessage()]
                 ]
