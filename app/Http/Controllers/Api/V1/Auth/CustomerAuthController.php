@@ -187,7 +187,8 @@ class CustomerAuthController extends Controller
                 ], 403);
             }
 
-            $token = (env('APP_MODE') == 'live') ? rand(100000, 999999) : 123456;
+            $token = rand(100000, 999999);
+            // (env('APP_MODE') == 'live') ? rand(100000, 999999) : 123456;
 
             DB::table('email_verifications')->updateOrInsert(['email' => $request['email']], [
                 'email' => $request['email'],
