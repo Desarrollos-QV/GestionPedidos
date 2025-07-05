@@ -440,7 +440,7 @@ class CustomerAuthController extends Controller
         }catch (\Exception $exception) {
             return response()->json([
                 'errors' => [
-                    ['code' => 'otp', 'message' => "Token no generado...."]
+                    ['code' => 'otp', 'message' => "Token no generado.... ". $exception->getMessage()]
                 ]
             ], 403);
 
