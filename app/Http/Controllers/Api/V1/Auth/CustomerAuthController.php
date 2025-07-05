@@ -385,11 +385,12 @@ class CustomerAuthController extends Controller
             // $verify->delete();
             // $token = 0;
 
-            // $token = $user->createToken('RestaurantCustomerAuth')->accessToken;
+            $token = $user->createToken('RestaurantCustomerAuth')->accessToken;
             // return response()->json(['message' => translate('OTP verified!'), 'token' => $token, 'status' => true], 200);
         }
 
         return response()->json([
+            'token'  => $token,
             'user'   => $user,
             'verify' => $verify
         ], 403);
