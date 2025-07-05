@@ -377,9 +377,6 @@ class CustomerAuthController extends Controller
                 
                 $token = $user->createToken('RestaurantCustomerAuth')->accessToken;
                 return response()->json(['message' => translate('OTP verified!'), 'token' => $token, 'status' => true], 200);
-                
-
-
             } else{
                 $verificationdata = DB::table('email_verifications')->where('email', $request['email'])->first();
 
@@ -428,10 +425,11 @@ class CustomerAuthController extends Controller
 
                 DB::table('email_verifications')->updateOrInsert(['email' => $request['email']],
                     [
+                        'token' => $request['token'],
                         'otp_hit_count' => DB::raw('otp_hit_count + 1'),
                         'updated_at' => now(),
                         'temp_block_time' => null,
-                    ]);
+                ]);
             }
 
             return response()->json(['errors' => [
