@@ -371,10 +371,21 @@ class CustomerAuthController extends Controller
             $user->save();
 
             $verify->delete();
+            $token = 0;
+            try {
+                $token = $user->createToken('RestaurantCustomerAuth')->accessToken;
+                return response()->json(['message' => translate('OTP verified!'), 'token' => $token, 'status' => true], 200);
+            }catch (\Exception $exception) {
 
-            $token = $user->createToken('RestaurantCustomerAuth')->accessToken;
+                return response()->json([
+                    'token' => $token,
+                    'errors' => [
+                        ['code' => 'otp', 'message' => "Token no generado...."]
+                    ]
+                ], 403);
 
-            return response()->json(['message' => translate('OTP verified!'), 'token' => $token, 'status' => true], 200);
+            }
+
 
         } else{
             $verificationdata = DB::table('email_verifications')->where('email', $request['email'])->first();
