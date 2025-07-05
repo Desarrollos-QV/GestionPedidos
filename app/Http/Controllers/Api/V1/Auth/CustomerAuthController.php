@@ -201,16 +201,13 @@ class CustomerAuthController extends Controller
                 $emailServices = Helpers::get_business_settings('mail_config');
                 $mailStatus = Helpers::get_business_settings('registration_otp_mail_status_user');
 
-                // && $mailStatus == 1
-                if(isset($emailServices['status']) && $emailServices['status'] == 1){
+                if(isset($emailServices['status']) && $emailServices['status'] == 1 && $mailStatus == 1){
                     Mail::to($request['email'])->send(new EmailVerification($token, $languageCode));
                 }
 
             } catch (\Exception $exception) {
 
                 return response()->json([
-                    'token' => $token,
-                    'languageCode' => $languageCode,
                     'errors' => [
                         ['code' => 'otp', 'message' => translate('Token sent failed!')]
                     ]
