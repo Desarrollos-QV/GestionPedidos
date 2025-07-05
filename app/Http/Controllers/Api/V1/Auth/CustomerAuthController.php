@@ -348,103 +348,114 @@ class CustomerAuthController extends Controller
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
 
-        try {
-            $maxOTPHit = Helpers::get_business_settings('maximum_otp_hit') ?? 5;
-            $maxOTPHitTime = Helpers::get_business_settings('otp_resend_time') ?? 60;// seconds
-            $tempBlockTime = Helpers::get_business_settings('temporary_block_time') ?? 600; // seconds
 
-            $verify = EmailVerifications::where(['email' => $request->input('email'), 'token' => $request->input('token')])->first();
+        $maxOTPHit = Helpers::get_business_settings('maximum_otp_hit') ?? 5;
+        $maxOTPHitTime = Helpers::get_business_settings('otp_resend_time') ?? 60;// seconds
+        $tempBlockTime = Helpers::get_business_settings('temporary_block_time') ?? 600; // seconds
 
-            if (isset($verify)) {
-                if(isset($verify->temp_block_time ) && Carbon::parse($verify->temp_block_time)->DiffInSeconds() <= $tempBlockTime){
-                    $time = $tempBlockTime - Carbon::parse($verify->temp_block_time)->DiffInSeconds();
+        $verify = EmailVerifications::where(['email' => $request->input('email'), 'token' => $request->input('token')])->first();
+        
+        return response()->json([
+            'verify' => $verify
+        ], 403);
 
-                    $errors = [];
-                    $errors[] = ['code' => 'otp_block_time',
-                        'message' => translate('please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans()
-                    ];
-                    return response()->json([
-                        'errors' => $errors
-                    ], 403);
-                }
+        // try {
+        //     $maxOTPHit = Helpers::get_business_settings('maximum_otp_hit') ?? 5;
+        //     $maxOTPHitTime = Helpers::get_business_settings('otp_resend_time') ?? 60;// seconds
+        //     $tempBlockTime = Helpers::get_business_settings('temporary_block_time') ?? 600; // seconds
 
-                $user = $this->user->where(['email' => $request->input('email')])->first();
-                $user->email_verified_at = Carbon::now();
-                $user->save();
+        //     $verify = EmailVerifications::where(['email' => $request->input('email'), 'token' => $request->input('token')])->first();
 
-                $verify->delete();
-                $token = 0;
+        //     if (isset($verify)) {
+        //         if(isset($verify->temp_block_time ) && Carbon::parse($verify->temp_block_time)->DiffInSeconds() <= $tempBlockTime){
+        //             $time = $tempBlockTime - Carbon::parse($verify->temp_block_time)->DiffInSeconds();
+
+        //             $errors = [];
+        //             $errors[] = ['code' => 'otp_block_time',
+        //                 'message' => translate('please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans()
+        //             ];
+        //             return response()->json([
+        //                 'errors' => $errors
+        //             ], 403);
+        //         }
+
+        //         $user = $this->user->where(['email' => $request->input('email')])->first();
+        //         $user->email_verified_at = Carbon::now();
+        //         $user->save();
+
+        //         $verify->delete();
+        //         $token = 0;
                 
-                $token = $user->createToken('RestaurantCustomerAuth')->accessToken;
-                return response()->json(['message' => translate('OTP verified!'), 'token' => $token, 'status' => true], 200);
-            } else{
-                $verificationdata = DB::table('email_verifications')->where('email', $request->input('email'))->first();
+        //         $token = $user->createToken('RestaurantCustomerAuth')->accessToken;
+        //         return response()->json(['message' => translate('OTP verified!'), 'token' => $token, 'status' => true], 200);
+        //     } else{
+        //         $verificationdata = DB::table('email_verifications')->where('email', $request->input('email'))->first();
 
-                if(isset($verificationdata)){
-                    if(isset($verificationdata->temp_block_time ) && Carbon::parse($verificationdata->temp_block_time)->DiffInSeconds() <= $tempBlockTime){
-                        $time= $tempBlockTime - Carbon::parse($verificationdata->temp_block_time)->DiffInSeconds();
+        //         if(isset($verificationdata)){
+        //             if(isset($verificationdata->temp_block_time ) && Carbon::parse($verificationdata->temp_block_time)->DiffInSeconds() <= $tempBlockTime){
+        //                 $time= $tempBlockTime - Carbon::parse($verificationdata->temp_block_time)->DiffInSeconds();
 
-                        $errors = [];
-                        $errors[] = ['code' => 'otp_block_time',
-                            'message' => translate('please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans()
-                        ];
-                        return response()->json([
-                            'errors' => $errors
-                        ], 403);
-                    }
+        //                 $errors = [];
+        //                 $errors[] = ['code' => 'otp_block_time',
+        //                     'message' => translate('please_try_again_after_') . CarbonInterval::seconds($time)->cascade()->forHumans()
+        //                 ];
+        //                 return response()->json([
+        //                     'errors' => $errors
+        //                 ], 403);
+        //             }
 
-                    if($verificationdata->is_temp_blocked == 1 && Carbon::parse($verificationdata->updated_at)->DiffInSeconds() >= $tempBlockTime){
-                        DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
-                            [
-                                'otp_hit_count' => 0,
-                                'is_temp_blocked' => 0,
-                                'temp_block_time' => null,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-                    }
+        //             if($verificationdata->is_temp_blocked == 1 && Carbon::parse($verificationdata->updated_at)->DiffInSeconds() >= $tempBlockTime){
+        //                 DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
+        //                     [
+        //                         'otp_hit_count' => 0,
+        //                         'is_temp_blocked' => 0,
+        //                         'temp_block_time' => null,
+        //                         'created_at' => now(),
+        //                         'updated_at' => now(),
+        //                     ]);
+        //             }
 
-                    if($verificationdata->otp_hit_count >= $maxOTPHit &&  Carbon::parse($verificationdata->updated_at)->DiffInSeconds() < $maxOTPHitTime &&  $verificationdata->is_temp_blocked == 0){
+        //             if($verificationdata->otp_hit_count >= $maxOTPHit &&  Carbon::parse($verificationdata->updated_at)->DiffInSeconds() < $maxOTPHitTime &&  $verificationdata->is_temp_blocked == 0){
 
-                        DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
-                            [
-                                'is_temp_blocked' => 1,
-                                'temp_block_time' => now(),
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
+        //                 DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
+        //                     [
+        //                         'is_temp_blocked' => 1,
+        //                         'temp_block_time' => now(),
+        //                         'created_at' => now(),
+        //                         'updated_at' => now(),
+        //                     ]);
 
-                        $time= $tempBlockTime - Carbon::parse($verificationdata->temp_block_time)->DiffInSeconds();
-                        $errors = [];
-                        $errors[] = ['code' => 'otp_temp_blocked', 'message' => translate('Too_many_attempts. please_try_again_after_'). CarbonInterval::seconds($time)->cascade()->forHumans()];
-                        return response()->json([
-                            'errors' => $errors
-                        ], 403);
-                    }
-                }
+        //                 $time= $tempBlockTime - Carbon::parse($verificationdata->temp_block_time)->DiffInSeconds();
+        //                 $errors = [];
+        //                 $errors[] = ['code' => 'otp_temp_blocked', 'message' => translate('Too_many_attempts. please_try_again_after_'). CarbonInterval::seconds($time)->cascade()->forHumans()];
+        //                 return response()->json([
+        //                     'errors' => $errors
+        //                 ], 403);
+        //             }
+        //         }
 
-                DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
-                    [
-                        'token' => $request->input('token'),
-                        'otp_hit_count' => DB::raw('otp_hit_count + 1'),
-                        'updated_at' => now(),
-                        'temp_block_time' => null,
-                ]);
-            }
+        //         DB::table('email_verifications')->updateOrInsert(['email' => $request->input('email')],
+        //             [
+        //                 'token' => $request->input('token'),
+        //                 'otp_hit_count' => DB::raw('otp_hit_count + 1'),
+        //                 'updated_at' => now(),
+        //                 'temp_block_time' => null,
+        //         ]);
+        //     }
 
-            return response()->json(['errors' => [
-                ['code' => 'otp', 'message' => translate('OTP is not matched!')]
-            ]], 403);
-        }catch (\Exception $exception) {
-            return response()->json([
-                'email' => $request->input('email'),
-                'token' => $request->input('token'),
-                'errors' => [
-                    ['code' => 'otp', 'message' => "Token no generado.... ". $exception->getMessage()]
-                ]
-            ], 403);
+        //     return response()->json(['errors' => [
+        //         ['code' => 'otp', 'message' => translate('OTP is not matched!')]
+        //     ]], 403);
+        // }catch (\Exception $exception) {
+        //     return response()->json([
+        //         'email' => $request->input('email'),
+        //         'token' => $request->input('token'),
+        //         'errors' => [
+        //             ['code' => 'otp', 'message' => "Token no generado.... ". $exception->getMessage()]
+        //         ]
+        //     ], 403);
 
-        }
+        // }
     }
 
     /**
