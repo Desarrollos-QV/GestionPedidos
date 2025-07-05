@@ -209,6 +209,8 @@ class CustomerAuthController extends Controller
             } catch (\Exception $exception) {
 
                 return response()->json([
+                    'token' => $token,
+                    'languageCode' => $languageCode,
                     'errors' => [
                         ['code' => 'otp', 'message' => translate('Token sent failed!')]
                     ]
