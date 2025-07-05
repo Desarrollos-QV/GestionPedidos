@@ -378,7 +378,7 @@ class CustomerAuthController extends Controller
                 ], 403);
             }
 
-            // $user = $this->user->where(['email' => $request->input('email')])->first();
+            $user = $this->user->where(['email' => $request->input('email')])->first();
             // $user->email_verified_at = Carbon::now();
             // $user->save();
 
@@ -390,6 +390,7 @@ class CustomerAuthController extends Controller
         }
 
         return response()->json([
+            'user'   => $user,
             'verify' => $verify
         ], 403);
 
