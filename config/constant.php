@@ -2,7 +2,7 @@
 
 
 //app mood
-const DEMO = 'demo';
+// const DEMO = 'demo';
 const DEV = 'dev';
 const LIVE = 'live';
 
