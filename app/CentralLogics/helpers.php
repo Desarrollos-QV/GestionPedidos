@@ -25,6 +25,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
+if (!defined('CACHE_BUSINESS_SETTINGS_TABLE')) {
+    define('CACHE_BUSINESS_SETTINGS_TABLE', 'business_settings');
+}
+if (!defined('CACHE_LOGIN_SETUP_TABLE')) {
+    define('CACHE_LOGIN_SETUP_TABLE', 'login_setup');
+}
+
 class Helpers
 {
     public static function error_processor($validator)
