@@ -15,6 +15,8 @@ class TrustHosts extends Middleware
     {
         return [
             $this->allSubdomainsOfApplicationUrl(),
+            'https://gestiondpedidos.web.app/',
+            'https://gestiondpedidos.firebaseapp.com/',
             'localhost'
         ];
     }
